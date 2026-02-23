@@ -27,8 +27,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      transform:            true,
-      whitelist:            true,
+      transform: true,
+      whitelist: true,
       forbidNonWhitelisted: true,
       transformOptions: { enableImplicitConversion: true },
     }),
@@ -39,8 +39,8 @@ async function bootstrap() {
     : ['http://localhost:5173', 'http://localhost:3000'];
 
   app.enableCors({
-    origin:         allowedOrigins,
-    methods:        ['POST'],
+    origin: allowedOrigins,
+    methods: ['POST'],
     allowedHeaders: ['Content-Type'],
   });
 
