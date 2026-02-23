@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
-import { BondInput, BondResult } from '../types/bond';
+import type { BondInput, BondResult } from '../types/bond';
 import { calculateBond } from '../utils/api';
 
 interface UseBondCalculatorReturn {
-  result:    BondResult | null;
-  loading:   boolean;
-  error:     string | null;
+  result: BondResult | null;
+  loading: boolean;
+  error: string | null;
   calculate: (input: BondInput) => Promise<void>;
 }
 
@@ -15,9 +15,9 @@ interface UseBondCalculatorReturn {
  * If we swap fetch for axios or React Query later, only this file changes.
  */
 export function useBondCalculator(): UseBondCalculatorReturn {
-  const [result,  setResult]  = useState<BondResult | null>(null);
+  const [result, setResult] = useState<BondResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const calculate = useCallback(async (input: BondInput) => {
     setLoading(true);

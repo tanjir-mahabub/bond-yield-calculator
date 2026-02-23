@@ -1,17 +1,18 @@
-import { useState, FormEvent, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import type { FormEvent } from 'react';
 import { useBondCalculator } from './hooks/useBondCalculator';
-import { BondInput } from './types/bond';
+import type { BondInput } from './types/bond';
 import { BondForm } from './components/BondForm';
 import { MetricsGrid } from './components/MetricsGrid';
 import { CashFlowTable } from './components/CashFlowTable';
 import './index.css';
 
 const DEFAULT_INPUT: BondInput = {
-  faceValue:        1000,
+  faceValue: 1000,
   annualCouponRate: 5,
-  marketPrice:      950,
-  yearsToMaturity:  10,
-  couponFrequency:  'semi-annual',
+  marketPrice: 950,
+  yearsToMaturity: 10,
+  couponFrequency: 'semi-annual',
 };
 
 /**

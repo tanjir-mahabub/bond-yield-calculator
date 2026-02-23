@@ -1,9 +1,9 @@
 import { useState, memo } from 'react';
-import { CashFlowPeriod } from '../types/bond';
+import type { CashFlowPeriod } from '../types/bond';
 import { formatCurrency } from '../utils/format';
 
 interface Props {
-  schedule:     CashFlowPeriod[];
+  schedule: CashFlowPeriod[];
   previewRows?: number;
 }
 
@@ -15,7 +15,7 @@ interface Props {
 export const CashFlowTable = memo(function CashFlowTable({ schedule, previewRows = 8 }: Props) {
   const [showAll, setShowAll] = useState(false);
   const visibleRows = showAll ? schedule : schedule.slice(0, previewRows);
-  const lastPeriod  = schedule.at(-1)?.period;
+  const lastPeriod = schedule.at(-1)?.period;
 
   return (
     <div className="schedule-section">

@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { BondResult } from '../types/bond';
+import type { BondResult } from '../types/bond';
 import { formatCurrency, formatPercent } from '../utils/format';
 
 interface Props { result: BondResult; }
@@ -13,9 +13,8 @@ export const MetricsGrid = memo(function MetricsGrid({ result }: Props) {
 
   const statusDesc = premiumOrDiscount === 'par'
     ? 'Trading at face value'
-    : `${formatCurrency(premiumDiscountAmount)} (${formatPercent(premiumDiscountPercent, 2)}) ${
-        premiumOrDiscount === 'premium' ? 'above' : 'below'
-      } face value`;
+    : `${formatCurrency(premiumDiscountAmount)} (${formatPercent(premiumDiscountPercent, 2)}) ${premiumOrDiscount === 'premium' ? 'above' : 'below'
+    } face value`;
 
   return (
     <div className="results-grid" role="list" aria-label="Bond metrics">

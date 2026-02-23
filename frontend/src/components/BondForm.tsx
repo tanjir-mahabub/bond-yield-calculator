@@ -1,10 +1,11 @@
-import { FormEvent, memo } from 'react';
-import { BondInput, CouponFrequency } from '../types/bond';
+import { memo } from 'react';
+import type { FormEvent } from 'react';
+import type { BondInput, CouponFrequency } from '../types/bond';
 
 interface Props {
-  form:     BondInput;
-  loading:  boolean;
-  error:    string | null;
+  form: BondInput;
+  loading: boolean;
+  error: string | null;
   onChange: (field: keyof BondInput, value: string | number) => void;
   onSubmit: (e: FormEvent) => void;
 }
@@ -83,9 +84,9 @@ export const BondForm = memo(function BondForm({ form, loading, error, onChange,
             {loading
               ? <span className="spinner" role="status" aria-label="Calculating…" />
               : (<><span>Calculate</span>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg></>)
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg></>)
             }
           </button>
         </div>
@@ -94,8 +95,8 @@ export const BondForm = memo(function BondForm({ form, loading, error, onChange,
       {error && (
         <div className="error-banner" role="alert" aria-live="polite">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
-            <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
           {error}
         </div>
