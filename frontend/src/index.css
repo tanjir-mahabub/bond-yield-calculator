@@ -65,12 +65,17 @@ body {
   color: var(--ink);
   line-height: 1.6;
   min-height: 100vh;
+  /* FIX: prevent any child from causing horizontal scroll on body */
+  overflow-x: hidden;
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* FIX: constrain app shell width so nothing bleeds out */
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* ── HEADER ── */
@@ -78,6 +83,9 @@ body {
   border-bottom: 2px solid var(--ink);
   background: var(--ink);
   color: var(--paper);
+  /* FIX: ensure header never causes overflow */
+  width: 100%;
+  overflow: hidden;
 }
 
 .header-inner {
@@ -158,12 +166,15 @@ body {
 .main {
   flex: 1;
   max-width: var(--max-width);
+  /* FIX: width: 100% ensures it never exceeds viewport */
   width: 100%;
   margin: 0 auto;
   padding: var(--space-6) var(--space-4);
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-8);
+  /* FIX: prevent grid children from overflowing the grid container */
+  min-width: 0;
 }
 
 @media (min-width: 768px) {
@@ -203,6 +214,8 @@ body {
 /* ── FORM ── */
 .input-section {
   width: 100%;
+  /* FIX: grid child must have min-width:0 to respect parent grid width */
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
@@ -229,7 +242,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  /* FIX: prevent field from blowing out grid cell */
+  min-width: 0;
 }
+
 .field-group--full {
   grid-column: 1 / -1;
 }
@@ -252,6 +268,8 @@ body {
   background: #fff;
   transition: border-color 0.15s;
   min-height: 44px;
+  /* FIX: ensure input-wrap never exceeds its container */
+  width: 100%;
 }
 
 .input-wrap:focus-within {
@@ -281,6 +299,9 @@ body {
 }
 
 .field-input {
+  /* FIX: min-width:0 is critical — inputs have browser default min-width
+     that can cause them to overflow their flex container */
+  min-width: 0;
   width: 100%;
   padding: var(--space-3);
   border: none;
@@ -304,6 +325,7 @@ body {
   border-radius: var(--radius);
   overflow: hidden;
   min-height: 44px;
+  width: 100%;
 }
 
 .freq-btn {
@@ -322,6 +344,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* FIX: prevent text overflow on small screens */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .freq-btn:not(:last-child) {
@@ -405,6 +431,9 @@ body {
   align-items: flex-start;
   gap: var(--space-2);
   line-height: 1.5;
+  /* FIX: long error messages should wrap, not overflow */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .error-banner svg {
@@ -414,6 +443,11 @@ body {
 
 /* ── RESULTS ── */
 .results-section {
+  /* FIX: this is a grid child — min-width:0 is the key fix that prevents
+     the results column from overflowing when content is wider than
+     the available grid cell width on mobile */
+  min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--space-10);
@@ -434,8 +468,12 @@ body {
 /* ── METRICS GRID ── */
 .results-grid {
   display: grid;
+  /* FIX: always start 1 column on xs, even after calculate */
   grid-template-columns: 1fr;
   gap: var(--space-3);
+  /* FIX: grid itself must not overflow its container */
+  width: 100%;
+  min-width: 0;
 }
 
 @media (min-width: 480px) {
@@ -451,6 +489,9 @@ body {
   padding: var(--space-5);
   box-shadow: var(--shadow);
   transition: box-shadow 0.15s;
+  /* FIX: card must not overflow grid cell */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .metric-card:hover {
@@ -508,7 +549,11 @@ body {
   line-height: 1;
   margin-bottom: var(--space-2);
   letter-spacing: -0.02em;
-  word-break: break-all;
+  /* FIX: use overflow-wrap instead of word-break:break-all
+     overflow-wrap only breaks when truly necessary, word-break:break-all
+     breaks even short numbers which looks bad */
+  overflow-wrap: break-word;
+  /* FIX: remove word-break:break-all — it was breaking currency values mid-number */
 }
 
 .metric-desc {
@@ -517,6 +562,8 @@ body {
   color: var(--ink-4);
   font-style: italic;
   line-height: 1.4;
+  /* FIX: description text should wrap gracefully */
+  overflow-wrap: break-word;
 }
 
 .metric-value--badge {
@@ -552,6 +599,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* FIX: flex child needs min-width:0 to respect parent */
+  min-width: 0;
+  width: 100%;
 }
 
 .schedule-header {
@@ -578,12 +628,18 @@ body {
 }
 
 .table-wrap {
+  /* FIX: overflow-x:auto here handles table scroll;
+     the parent overflow-x:hidden on body/app prevents
+     this from causing a double scrollbar */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border: 1.5px solid var(--rule);
   border-radius: var(--radius-lg);
   background: #fff;
   position: relative;
+  /* FIX: ensure table-wrap itself doesn't grow beyond parent */
+  width: 100%;
+  min-width: 0;
 }
 
 /* Scroll-hint gradient on mobile */
@@ -608,6 +664,7 @@ body {
 .schedule-table {
   width: 100%;
   border-collapse: collapse;
+  /* Table scrolls horizontally inside .table-wrap — this is correct */
   min-width: 560px;
 }
 
