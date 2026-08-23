@@ -4,8 +4,9 @@ import {
   BondCalculationResult,
   CashFlowPeriod,
   CouponFrequency,
+  YieldScenario,
 } from './bond.dto';
-import { round, solveYTMBisection } from './math.utils';
+import { bondPresentValue, calculateRiskMetrics, round, solveYTMBisection } from './math.utils';
 
 /**
  * BondService — domain logic layer.
@@ -19,7 +20,7 @@ import { round, solveYTMBisection } from './math.utils';
 @Injectable()
 export class BondService {
   calculate(input: BondInputDto): BondCalculationResult {
-    const periodsPerYear = input.couponFrequency === CouponFrequency.SEMI_ANNUAL ? 2 : 1;
+    const periodsPerYear = this.getPeriodsPerYear(input.couponFrequency);
     const totalPeriods   = Math.round(input.yearsToMaturity * periodsPerYear);
     const couponPayment  = this.getCouponPayment(
       input.faceValue,
@@ -27,12 +28,34 @@ export class BondService {
       periodsPerYear,
     );
 
+    const periodicYield = solveYTMBisection(input.marketPrice, couponPayment, input.faceValue, totalPeriods);
+    const nominalYtm = periodicYield * periodsPerYear * 100;
+    const risk = calculateRiskMetrics(
+      input.marketPrice,
+      couponPayment,
+      input.faceValue,
+      totalPeriods,
+      periodsPerYear,
+      periodicYield,
+    );
+    const totalInterestEarned = couponPayment * totalPeriods;
+
     return {
       currentYield:        round(this.getCurrentYield(input.faceValue, input.annualCouponRate, input.marketPrice), 4),
-      ytm:                 round(this.getAnnualisedYTM(input.marketPrice, couponPayment, input.faceValue, totalPeriods, periodsPerYear), 4),
-      totalInterestEarned: round(couponPayment * totalPeriods, 2),
+      ytm:                 round(nominalYtm, 4),
+      totalInterestEarned: round(totalInterestEarned, 2),
+      couponPayment:       round(couponPayment, 2),
+      totalCashReceived:   round(totalInterestEarned + input.faceValue, 2),
+      netReturn:           round(totalInterestEarned + input.faceValue - input.marketPrice, 2),
+      effectiveAnnualYield: round((Math.pow(1 + periodicYield, periodsPerYear) - 1) * 100, 4),
+      macaulayDuration:    round(risk.macaulayDuration, 4),
+      modifiedDuration:    round(risk.modifiedDuration, 4),
+      convexity:           round(risk.convexity, 4),
+      dv01:                round(risk.dv01, 4),
+      periods:             totalPeriods,
       ...this.getPremiumDiscountInfo(input.faceValue, input.marketPrice),
-      cashFlowSchedule:    this.buildCashFlowSchedule(input.faceValue, couponPayment, totalPeriods, periodsPerYear),
+      cashFlowSchedule:    this.buildCashFlowSchedule(input.faceValue, couponPayment, totalPeriods, periodsPerYear, periodicYield),
+      yieldScenarios:      this.buildYieldScenarios(input.marketPrice, couponPayment, input.faceValue, totalPeriods, periodsPerYear, nominalYtm),
     };
   }
 
@@ -47,15 +70,10 @@ export class BondService {
     return ((faceValue * (annualCouponRate / 100)) / marketPrice) * 100;
   }
 
-  private getAnnualisedYTM(
-    marketPrice: number,
-    couponPayment: number,
-    faceValue: number,
-    totalPeriods: number,
-    periodsPerYear: number,
-  ): number {
-    const periodicRate = solveYTMBisection(marketPrice, couponPayment, faceValue, totalPeriods);
-    return periodicRate * periodsPerYear * 100; // annualised %
+  private getPeriodsPerYear(frequency: CouponFrequency): number {
+    return frequency === CouponFrequency.QUARTERLY
+      ? 4
+      : frequency === CouponFrequency.SEMI_ANNUAL ? 2 : 1;
   }
 
   private getPremiumDiscountInfo(
@@ -86,6 +104,7 @@ export class BondService {
     couponPayment: number,
     totalPeriods: number,
     periodsPerYear: number,
+    periodicYield: number,
   ): CashFlowPeriod[] {
     const today           = new Date();
     const monthsPerPeriod = 12 / periodsPerYear;
@@ -104,6 +123,32 @@ export class BondService {
         couponPayment:      roundedCoupon,
         cumulativeInterest: round(cumulative, 2),
         remainingPrincipal: period === totalPeriods ? 0 : faceValue,
+        principalPayment:   period === totalPeriods ? faceValue : 0,
+        totalCashFlow:      round(couponPayment + (period === totalPeriods ? faceValue : 0), 2),
+        presentValue:       round((couponPayment + (period === totalPeriods ? faceValue : 0)) / Math.pow(1 + periodicYield, period), 2),
+      };
+    });
+  }
+
+  private buildYieldScenarios(
+    marketPrice: number,
+    couponPayment: number,
+    faceValue: number,
+    totalPeriods: number,
+    periodsPerYear: number,
+    nominalYtm: number,
+  ): YieldScenario[] {
+    return [-200, -100, -50, 0, 50, 100, 200].map((basisPoints) => {
+      const annualYield = nominalYtm + basisPoints / 100;
+      const periodicYield = Math.max(-0.99, annualYield / 100 / periodsPerYear);
+      const estimatedPrice = bondPresentValue(periodicYield, couponPayment, faceValue, totalPeriods);
+      const priceChange = estimatedPrice - marketPrice;
+      return {
+        basisPoints,
+        yield: round(annualYield, 4),
+        estimatedPrice: round(estimatedPrice, 2),
+        priceChange: round(priceChange, 2),
+        priceChangePercent: round((priceChange / marketPrice) * 100, 4),
       };
     });
   }

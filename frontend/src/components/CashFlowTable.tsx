@@ -1,6 +1,6 @@
 import { useState, memo } from 'react';
 import type { CashFlowPeriod } from '../types/bond';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, downloadCsv } from '../utils/format';
 
 interface Props {
   schedule: CashFlowPeriod[];
@@ -20,8 +20,8 @@ export const CashFlowTable = memo(function CashFlowTable({ schedule, previewRows
   return (
     <div className="schedule-section">
       <div className="schedule-header">
-        <h2 className="section-title">Cash Flow Schedule</h2>
-        <span className="period-count">{schedule.length} periods total</span>
+        <div><span className="panel-kicker">Projected payments</span><h2 className="section-title">Cash Flow Schedule</h2></div>
+        <div className="schedule-actions"><span className="period-count">{schedule.length} periods</span><button type="button" onClick={() => downloadCsv(schedule)}>Export CSV ↓</button></div>
       </div>
 
       <div className="table-wrap" role="region" aria-label="Cash flow schedule" tabIndex={0}>
@@ -31,8 +31,9 @@ export const CashFlowTable = memo(function CashFlowTable({ schedule, previewRows
               <th scope="col">Period</th>
               <th scope="col">Payment Date</th>
               <th scope="col">Coupon Payment</th>
-              <th scope="col">Cumulative Interest</th>
-              <th scope="col">Remaining Principal</th>
+              <th scope="col">Principal</th>
+              <th scope="col">Total Cash Flow</th>
+              <th scope="col">Present Value</th>
             </tr>
           </thead>
           <tbody>
@@ -41,12 +42,9 @@ export const CashFlowTable = memo(function CashFlowTable({ schedule, previewRows
                 <td className="td--period">{row.period}</td>
                 <td className="td--date">{row.paymentDate}</td>
                 <td>{formatCurrency(row.couponPayment)}</td>
-                <td>{formatCurrency(row.cumulativeInterest)}</td>
-                <td>
-                  {row.remainingPrincipal === 0
-                    ? <span className="returned">Returned</span>
-                    : formatCurrency(row.remainingPrincipal)}
-                </td>
+                <td>{row.principalPayment ? formatCurrency(row.principalPayment) : '—'}</td>
+                <td>{formatCurrency(row.totalCashFlow)}</td>
+                <td>{formatCurrency(row.presentValue)}</td>
               </tr>
             ))}
           </tbody>

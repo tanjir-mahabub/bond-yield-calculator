@@ -57,7 +57,7 @@ export function solveYTMBisection(
   tolerance     = 0.0001,
   maxIterations = 200,
 ): number {
-  let lo  = 1e-7;   // near-zero rate → PV is very large
+  let lo  = -0.999999; // supports premium bonds with a negative yield
   let hi  = 10.0;   // 1000% rate → PV ≈ 0
   let mid = 0;
 
@@ -72,4 +72,44 @@ export function solveYTMBisection(
   }
 
   return mid;
+}
+
+export interface RiskMetrics {
+  macaulayDuration: number;
+  modifiedDuration: number;
+  convexity: number;
+  dv01: number;
+}
+
+/** Interest-rate sensitivity metrics derived from discounted cash flows. */
+export function calculateRiskMetrics(
+  marketPrice: number,
+  couponPayment: number,
+  faceValue: number,
+  totalPeriods: number,
+  periodsPerYear: number,
+  periodicYield: number,
+): RiskMetrics {
+  let weightedTime = 0;
+  let convexityNumerator = 0;
+
+  for (let period = 1; period <= totalPeriods; period++) {
+    const cashFlow = couponPayment + (period === totalPeriods ? faceValue : 0);
+    const discountFactor = Math.pow(1 + periodicYield, period);
+    const presentValue = cashFlow / discountFactor;
+    weightedTime += (period / periodsPerYear) * presentValue;
+    convexityNumerator += period * (period + 1) * cashFlow /
+      Math.pow(1 + periodicYield, period + 2);
+  }
+
+  const macaulayDuration = weightedTime / marketPrice;
+  const modifiedDuration = macaulayDuration / (1 + periodicYield);
+  const convexity = convexityNumerator / (marketPrice * periodsPerYear ** 2);
+
+  return {
+    macaulayDuration,
+    modifiedDuration,
+    convexity,
+    dv01: modifiedDuration * marketPrice * 0.0001,
+  };
 }

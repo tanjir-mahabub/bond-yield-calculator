@@ -8,6 +8,7 @@ interface Props {
   error: string | null;
   onChange: (field: keyof BondInput, value: string | number) => void;
   onSubmit: (e: FormEvent) => void;
+  onPreset: (preset: 'discount' | 'par' | 'premium' | 'zero') => void;
 }
 
 /**
@@ -15,10 +16,16 @@ interface Props {
  * memo(): re-renders only when its own props change, NOT when parent
  * re-renders due to result state updates after a calculation.
  */
-export const BondForm = memo(function BondForm({ form, loading, error, onChange, onSubmit }: Props) {
+export const BondForm = memo(function BondForm({ form, loading, error, onChange, onSubmit, onPreset }: Props) {
   return (
     <section className="input-section">
-      <h2 className="section-title">Bond Parameters</h2>
+      <div className="panel-heading"><div><span className="panel-kicker">Instrument setup</span><h2 className="section-title">Bond Parameters</h2></div><span className="model-badge">Fixed-rate</span></div>
+
+      <div className="preset-row" aria-label="Example bond presets">
+        {(['discount', 'par', 'premium', 'zero'] as const).map((preset) => (
+          <button type="button" key={preset} onClick={() => onPreset(preset)}>{preset === 'zero' ? 'Zero coupon' : preset}</button>
+        ))}
+      </div>
 
       <form onSubmit={onSubmit} className="bond-form">
         <div className="field-group">
@@ -68,12 +75,12 @@ export const BondForm = memo(function BondForm({ form, loading, error, onChange,
         <div className="field-group field-group--full">
           <span className="field-label" id="freq-label">Coupon Frequency</span>
           <div className="freq-toggle" role="group" aria-labelledby="freq-label">
-            {(['annual', 'semi-annual'] as CouponFrequency[]).map((f) => (
+            {(['annual', 'semi-annual', 'quarterly'] as CouponFrequency[]).map((f) => (
               <button key={f} type="button"
                 className={`freq-btn ${form.couponFrequency === f ? 'freq-btn--active' : ''}`}
                 onClick={() => onChange('couponFrequency', f)}
                 aria-pressed={form.couponFrequency === f}>
-                {f === 'annual' ? 'Annual' : 'Semi-Annual'}
+                {f === 'annual' ? 'Annual' : f === 'semi-annual' ? 'Semi-Annual' : 'Quarterly'}
               </button>
             ))}
           </div>
@@ -83,7 +90,7 @@ export const BondForm = memo(function BondForm({ form, loading, error, onChange,
           <button type="submit" className="calculate-btn" disabled={loading} aria-busy={loading}>
             {loading
               ? <span className="spinner" role="status" aria-label="Calculating…" />
-              : (<><span>Calculate</span>
+              : (<><span>Run analysis</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg></>)

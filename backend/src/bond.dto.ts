@@ -4,6 +4,7 @@ import { Transform } from 'class-transformer';
 export enum CouponFrequency {
   ANNUAL      = 'annual',
   SEMI_ANNUAL = 'semi-annual',
+  QUARTERLY   = 'quarterly',
 }
 
 /**
@@ -51,6 +52,17 @@ export interface CashFlowPeriod {
   couponPayment:      number;
   cumulativeInterest: number;
   remainingPrincipal: number;
+  principalPayment: number;
+  totalCashFlow: number;
+  presentValue: number;
+}
+
+export interface YieldScenario {
+  basisPoints: number;
+  yield: number;
+  estimatedPrice: number;
+  priceChange: number;
+  priceChangePercent: number;
 }
 
 export interface BondCalculationResult {
@@ -61,4 +73,14 @@ export interface BondCalculationResult {
   premiumDiscountAmount:  number;
   premiumDiscountPercent: number;
   cashFlowSchedule:       CashFlowPeriod[];
+  couponPayment:          number;
+  totalCashReceived:      number;
+  netReturn:              number;
+  effectiveAnnualYield:   number;
+  macaulayDuration:       number;
+  modifiedDuration:       number;
+  convexity:              number;
+  dv01:                   number;
+  periods:                number;
+  yieldScenarios:         YieldScenario[];
 }

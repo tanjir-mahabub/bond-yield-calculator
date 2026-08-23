@@ -31,6 +31,18 @@ export const MetricsGrid = memo(function MetricsGrid({ result }: Props) {
       </div>
 
       <div className="metric-card" role="listitem">
+        <div className="metric-label">Effective Annual Yield</div>
+        <div className="metric-value">{formatPercent(result.effectiveAnnualYield, 4)}</div>
+        <div className="metric-desc">Compounding-adjusted annual return</div>
+      </div>
+
+      <div className="metric-card" role="listitem">
+        <div className="metric-label">Modified Duration</div>
+        <div className="metric-value">{result.modifiedDuration.toFixed(3)}<small> yrs</small></div>
+        <div className="metric-desc">Approximate price sensitivity to a 1% yield move</div>
+      </div>
+
+      <div className="metric-card" role="listitem">
         <div className="metric-label">Total Interest Earned</div>
         <div className="metric-value">{formatCurrency(result.totalInterestEarned)}</div>
         <div className="metric-desc">Sum of all coupon payments over life of bond</div>
@@ -44,6 +56,12 @@ export const MetricsGrid = memo(function MetricsGrid({ result }: Props) {
           </span>
         </div>
         <div className="metric-desc">{statusDesc}</div>
+      </div>
+
+      <div className="metric-card" role="listitem">
+        <div className="metric-label">DV01</div>
+        <div className="metric-value">{formatCurrency(result.dv01)}</div>
+        <div className="metric-desc">Estimated price change for a one basis-point move</div>
       </div>
     </div>
   );
